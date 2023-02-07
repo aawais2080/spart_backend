@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  spart-app:
+    build:
+      context: ./spart
+      dockerfile: Dockerfile
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    env_file:
+      - spart/docker.env
+    ports:
+      - "3001:80"
+    networks:
+      - spart-network
+
+  postgres-db:
+    image: postgres:14.1
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "main-spart-db", "-U", "admin" ]
+      timeout: 45s
+      interval: 3s
+      retries: 25
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=main-spart-db
+    ports:
+      - "3051:5432"  # Forward only needed when running spart-app on host machine
+    volumes:
+      - "postgres_data:/var/lib/postgresql/data/"
+    networks:
+      - spart-network
+
+volumes:
+  postgres_data:
+
+networks:
+  spart-network:
+    name: spart-network
+    driver: bridge

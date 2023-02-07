@@ -1,0 +1,35 @@
+# Sets the default profile to use when no profile is specified (requires the postgres-db container to be started)
+spring:
+  profiles:
+    default: "development"
+    group:
+      development:
+        - "main"
+        - "dev"
+      production:
+        - "main"
+        - "prod"
+      container: # TODO: Depending on the deployment strategy this could be split into docker-dev & docker-prod profiles
+        - "main"
+        - "docker"
+
+# Main profile
+---
+server:
+  error:
+    include-message: always
+spring:
+  config:
+    activate:
+      on-profile: main
+  mvc:
+    format:
+      date: iso
+      time: iso
+
+  flyway:
+    url: jdbc:postgresql://localhost:3051/main-spart-db
+    user: admin
+    password: admin
+    connect-retries: 10
+    connect-retries-interval: 10
